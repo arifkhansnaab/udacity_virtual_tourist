@@ -26,7 +26,7 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
         
         self.mapView.delegate = self
         
-        FlickrApi.sharedInstance.getPhotos(Double(mapPin.latitude!), longitude: Double(mapPin.longitude!)) { (result, error) in
+        FlickrApi.sharedInstance.getPhotos(Double(mapPin.latitude), longitude: Double(mapPin.longitude)) { (result, error) in
             if let error = error {
                 print(error)
             } else {

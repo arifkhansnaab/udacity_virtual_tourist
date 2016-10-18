@@ -6,10 +6,11 @@
         <relationship name="photos" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Photos" inverseName="mapPin" inverseEntity="Photos" syncable="YES"/>
     </entity>
     <entity name="Photos" representedClassName=".Photos" syncable="YES">
+        <attribute name="image" optional="YES" attributeType="Binary" syncable="YES"/>
         <relationship name="mapPin" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MapPin" inverseName="photos" inverseEntity="MapPin" syncable="YES"/>
     </entity>
     <elements>
-        <element name="Photos" positionX="205" positionY="30" width="128" height="58"/>
         <element name="MapPin" positionX="-45" positionY="0" width="128" height="88"/>
+        <element name="Photos" positionX="205" positionY="30" width="128" height="73"/>
     </elements>
 </model>

@@ -46,33 +46,6 @@ class MapViewController: UIViewController, MKMapViewDelegate {
         
         lblDeletePin.isHidden = true
     }
-
- 
-    /******************************************
-    **HELP NEEDED: After adding below 2 func, no pin was getting visiable on the map. Unable to figure out why.
-    */
-    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-        var v : MKAnnotationView! = nil
-        let ident = "pin"
-        v = mapView.dequeueReusableAnnotationView(withIdentifier: ident)
-        if v == nil {
-            v = MKAnnotationView(annotation:annotation, reuseIdentifier:ident)
-        }
-        
-        v.annotation = annotation
-        v.isDraggable = true
-        return v
-    }
-    
-    func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, didChange newState: MKAnnotationViewDragState, fromOldState oldState: MKAnnotationViewDragState) {
-        switch newState {
-        case .starting:
-            view.dragState = .dragging
-        case .ending, .canceling:
-            view.dragState = .none
-        default: break
-        }
-    }
     
     func setMapRegion() {
         let latitude:CLLocationDegrees = constLatitude
@@ -116,18 +89,29 @@ class MapViewController: UIViewController, MKMapViewDelegate {
     }
     
     //Add pin on the map when user holds the long press
+    let mapPointAnnotation = MKPointAnnotation()
+    
     func AddPin(_ uiGestureRecognizer: UIGestureRecognizer) {
         if ( uiGestureRecognizer.state == .began) {
+            
+            print("began")
             let touchPoint = uiGestureRecognizer.location(in: self.mapView)
             let pinCoord: CLLocationCoordinate2D = mapView.convert(touchPoint, toCoordinateFrom: self.mapView)
             
             let mapPointAnnotation = MKPointAnnotation()
             mapPointAnnotation.coordinate = pinCoord
-            mapView.addAnnotation(mapPointAnnotation)
+        }
+        else if ( uiGestureRecognizer.state == .changed) {
+            let touchPoint = uiGestureRecognizer.location(in: self.mapView)
+            let pinCoord: CLLocationCoordinate2D = mapView.convert(touchPoint, toCoordinateFrom: self.mapView)
             
+            mapPointAnnotation.coordinate = pinCoord
+            mapView.addAnnotation(mapPointAnnotation)
+        }
+        else if ( uiGestureRecognizer.state == .ended) {
             do {
                 let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-                _ = MapPin(lat: pinCoord.latitude, long: pinCoord.longitude, context: context)
+                _ = MapPin(lat: mapPointAnnotation.coordinate.latitude, long: mapPointAnnotation.coordinate.longitude, context: context)
                 try context.save()
             } catch {
                 print(error)
@@ -143,7 +127,7 @@ class MapViewController: UIViewController, MKMapViewDelegate {
             let mapPins = try context.fetch(storedMapPins) as [Virtual_Tourist_v2.MapPin]
             
             for mapPin in mapPins {
-                let coordinate = CLLocationCoordinate2DMake(CLLocationDegrees(mapPin.latitude!), CLLocationDegrees(mapPin.longitude!))
+                let coordinate = CLLocationCoordinate2DMake(CLLocationDegrees(mapPin.latitude), CLLocationDegrees(mapPin.longitude))
                 let newAnnotation = MKPointAnnotation()
                 newAnnotation.coordinate = coordinate
                 mapView.addAnnotation(newAnnotation)
