@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		801DFFC41DB6EC90000B8FD5 /* CoreDataStackManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801DFFC31DB6EC90000B8FD5 /* CoreDataStackManager.swift */; };
 		804338821DAC88DC004C1080 /* Photos+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8043387E1DAC88DC004C1080 /* Photos+CoreDataClass.swift */; };
 		804338831DAC88DC004C1080 /* Photos+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8043387F1DAC88DC004C1080 /* Photos+CoreDataProperties.swift */; };
 		804338841DAC88DC004C1080 /* MapPin+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 804338801DAC88DC004C1080 /* MapPin+CoreDataClass.swift */; };
@@ -45,6 +46,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		801DFFC31DB6EC90000B8FD5 /* CoreDataStackManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreDataStackManager.swift; sourceTree = "<group>"; };
 		8043387E1DAC88DC004C1080 /* Photos+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "Photos+CoreDataClass.swift"; path = "../Photos+CoreDataClass.swift"; sourceTree = "<group>"; };
 		8043387F1DAC88DC004C1080 /* Photos+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "Photos+CoreDataProperties.swift"; path = "../Photos+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		804338801DAC88DC004C1080 /* MapPin+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "MapPin+CoreDataClass.swift"; path = "../MapPin+CoreDataClass.swift"; sourceTree = "<group>"; };
@@ -203,6 +205,7 @@
 				804338811DAC88DC004C1080 /* MapPin+CoreDataProperties.swift */,
 				80C63C0B1DA5DC8100166354 /* Virtual_Tourist_v2.xcdatamodeld */,
 				804338861DAC89B4004C1080 /* CoreDataStack.swift */,
+				801DFFC31DB6EC90000B8FD5 /* CoreDataStackManager.swift */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -368,6 +371,7 @@
 				80C63C391DA5E45200166354 /* MapPhotoCollectionViewController.swift in Sources */,
 				80C63C3C1DA5E64300166354 /* CustomCollectionViewCell.swift in Sources */,
 				80E7B5AB1DAA7CAF00F1E1B1 /* Constant.swift in Sources */,
+				801DFFC41DB6EC90000B8FD5 /* CoreDataStackManager.swift in Sources */,
 				80C63C071DA5DC8100166354 /* MapViewController.swift in Sources */,
 				804338821DAC88DC004C1080 /* Photos+CoreDataClass.swift in Sources */,
 				804338871DAC89B4004C1080 /* CoreDataStack.swift in Sources */,

@@ -36,7 +36,7 @@ struct CoreDataStack {
         self.model = model
         
         
-        
+    
         // Create the store coordinator
         coordinator = NSPersistentStoreCoordinator(managedObjectModel: model)
         
@@ -92,8 +92,6 @@ extension CoreDataStack  {
         try coordinator.destroyPersistentStore(at: dbURL, ofType:NSSQLiteStoreType , options: nil)
         
         try addStoreCoordinator(NSSQLiteStoreType, configuration: nil, storeURL: dbURL, options: nil)
-        
-        
     }
 }
 

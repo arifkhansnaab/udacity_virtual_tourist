@@ -13,7 +13,6 @@ import CoreData
 class MapViewController: UIViewController, MKMapViewDelegate {
 
     @IBOutlet weak var mapView: MKMapView!
-    
     @IBOutlet weak var lblDeletePin: UILabel!
     @IBAction func btnEditPin(_ sender: AnyObject) {
         
@@ -23,6 +22,32 @@ class MapViewController: UIViewController, MKMapViewDelegate {
         } else {
             lblDeletePin.isHidden = true
             (sender as! UIBarButtonItem).title = "Edit"
+            
+           
+        }
+    }
+    
+    func deletePin(viewAnnottion: MKAnnotationView) {
+        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+        let latitutde = viewAnnottion.annotation?.coordinate.latitude
+        let longitude = viewAnnottion.annotation?.coordinate.longitude
+        
+        let mapPins = NSFetchRequest<MapPin>(entityName: "MapPin")
+        let searchQuery = NSPredicate(format: "latitude = %@ AND longitude = %@", argumentArray: [latitutde, longitude])
+        mapPins.predicate = searchQuery
+            
+        if let result = try? context.fetch(mapPins) {
+                for object in result {
+                    context.delete(object)
+                }
+            }
+        
+        mapView.removeAnnotation(viewAnnottion.annotation!)
+        
+        do {
+            try context.save()
+        } catch let error as NSError {
+            print (error)
         }
     }
     
@@ -66,6 +91,7 @@ class MapViewController: UIViewController, MKMapViewDelegate {
 
         if ( lblDeletePin.isHidden == false) {
             
+            //self.deletePin(viewAnnottion: view)
             let mapPins = NSFetchRequest<MapPin>(entityName: "MapPin")
             let searchQuery = NSPredicate(format: "latitude = %@ AND longitude = %@", argumentArray: [latitutde!, longitude!])
             mapPins.predicate = searchQuery
@@ -76,6 +102,14 @@ class MapViewController: UIViewController, MKMapViewDelegate {
                 }
             }
             mapView.removeAnnotation(view.annotation!)
+            
+            do {
+                try context.save()
+                print("context save")
+            } catch let error as NSError {
+                print (error)
+            }
+            
             return;
         }
         
@@ -93,7 +127,6 @@ class MapViewController: UIViewController, MKMapViewDelegate {
     
     func AddPin(_ uiGestureRecognizer: UIGestureRecognizer) {
         if ( uiGestureRecognizer.state == .began) {
-            
             print("began")
             let touchPoint = uiGestureRecognizer.location(in: self.mapView)
             let pinCoord: CLLocationCoordinate2D = mapView.convert(touchPoint, toCoordinateFrom: self.mapView)
@@ -102,6 +135,7 @@ class MapViewController: UIViewController, MKMapViewDelegate {
             mapPointAnnotation.coordinate = pinCoord
         }
         else if ( uiGestureRecognizer.state == .changed) {
+            print("changed")
             let touchPoint = uiGestureRecognizer.location(in: self.mapView)
             let pinCoord: CLLocationCoordinate2D = mapView.convert(touchPoint, toCoordinateFrom: self.mapView)
             
@@ -109,6 +143,7 @@ class MapViewController: UIViewController, MKMapViewDelegate {
             mapView.addAnnotation(mapPointAnnotation)
         }
         else if ( uiGestureRecognizer.state == .ended) {
+            print("ended")
             do {
                 let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
                 _ = MapPin(lat: mapPointAnnotation.coordinate.latitude, long: mapPointAnnotation.coordinate.longitude, context: context)
@@ -125,6 +160,8 @@ class MapViewController: UIViewController, MKMapViewDelegate {
             let storedMapPins = NSFetchRequest<MapPin>(entityName: "MapPin")
             let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
             let mapPins = try context.fetch(storedMapPins) as [Virtual_Tourist_v2.MapPin]
+            
+            
             
             for mapPin in mapPins {
                 let coordinate = CLLocationCoordinate2DMake(CLLocationDegrees(mapPin.latitude), CLLocationDegrees(mapPin.longitude))
