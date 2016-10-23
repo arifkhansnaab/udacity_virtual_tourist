@@ -143,6 +143,7 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         //delete photo
+        self.collectionView.deleteItems(at: [indexPath])
     }
     
     
