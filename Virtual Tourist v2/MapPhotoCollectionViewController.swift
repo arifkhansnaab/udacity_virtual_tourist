@@ -15,7 +15,8 @@ import Photos
 
 class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UICollectionViewDelegate, UICollectionViewDataSource, NSFetchedResultsControllerDelegate {
     
-       
+    
+    @IBOutlet weak var lblRemoveImage: UILabel!
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var collectionView: UICollectionView!
     
@@ -37,6 +38,7 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
         super.viewDidLoad()
         
         self.mapView.delegate = self
+        lblRemoveImage.isHidden = true
         
         FlickrApi.sharedInstance.getPhotos(Double(mapPin.latitude), longitude: Double(mapPin.longitude)) { (result, error) in
             if let error = error {
@@ -142,8 +144,7 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        //delete photo
-        self.collectionView.deleteItems(at: [indexPath])
+        lblRemoveImage.isHidden = false
     }
     
     

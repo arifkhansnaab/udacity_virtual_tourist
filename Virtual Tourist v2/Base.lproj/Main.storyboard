@@ -129,6 +129,7 @@
                     </view>
                     <connections>
                         <outlet property="collectionView" destination="W3x-HB-fGw" id="TvJ-Gc-Edz"/>
+                        <outlet property="lblRemoveImage" destination="lDy-Gg-S0W" id="Zyy-iU-l8e"/>
                         <outlet property="mapView" destination="cZM-D7-CsB" id="7WR-YO-Afy"/>
                     </connections>
                 </viewController>
