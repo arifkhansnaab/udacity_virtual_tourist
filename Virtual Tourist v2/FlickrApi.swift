@@ -96,13 +96,6 @@ class FlickrApi: NSObject {
         completionHandlerForConvertData(parsedResult, nil)
     }
     
-    //class func sharedInstance() -> FlickrApi {
-    //    struct Singleton {
-    //        static var sharedInstance = FlickrApi()
-    //    }
-    //    return Singleton.sharedInstance
-    //}
-    
     static let sharedInstance = FlickrApi()
     private override init() {}
     

@@ -5,8 +5,6 @@
 //  Created by Arif Khan on 10/18/16.
 //  Copyright © 2016 Snnab. All rights reserved.
 //
-
-
 import Foundation
 import CoreData
 
@@ -21,8 +19,6 @@ import CoreData
 private let SQLITE_FILE_NAME = "ColorCollection.sqlite"
 
 class CoreDataStackManager {
-    
-    
     // MARK: - Shared Instance
     
     /**
@@ -33,12 +29,10 @@ class CoreDataStackManager {
         struct Static {
             static let instance = CoreDataStackManager()
         }
-        
         return Static.instance
     }
     
     // MARK: - The Core Data stack. The code has been moved, unaltered, from the AppDelegate.
-    
     lazy var applicationDocumentsDirectory: URL = {
         
         print("Instantiating the applicationDocumentsDirectory property")
@@ -84,8 +78,6 @@ class CoreDataStackManager {
         do {
             try coordinator!.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: nil)
             
-            
-            
         } catch let error as NSError {
             print(error.localizedDescription)
             
@@ -98,30 +90,12 @@ class CoreDataStackManager {
             // Left in for development development.
             //NSLog("Unresolved error \(error), \(error!.userInfo)")
             abort()
-            
         }
-        
-     /*   if coordinator!.addPersistentStoreWithType(NSSQLiteStoreType, configuration: nil, URL: url, options: nil, error: &error) == nil {
-            coordinator = nil
-            // Report any error we got.
-            let dict = NSMutableDictionary()
-            dict[NSLocalizedDescriptionKey] = "Failed to initialize the application's saved data"
-            dict[NSLocalizedFailureReasonErrorKey] = "There was an error creating or loading the application's saved data."
-            dict[NSUnderlyingErrorKey] = error
-            error = NSError(domain: "Color Collection", code: 9999, userInfo: dict as [AnyHashable: Any])
-            
-            // Left in for development development.
-            NSLog("Unresolved error \(error), \(error!.userInfo)")
-            abort()
-        } */
-        
         return coordinator
     }()
     
     lazy var managedObjectContext: NSManagedObjectContext? = {
-        
         print("Instantiating the managedObjectContext property")
-        
         // Returns the managed object context for the application (which is already bound to the persistent store coordinator for the application.) This property is optional since there are legitimate error conditions that could cause the creation of the context to fail.
         let coordinator = self.persistentStoreCoordinator
         if coordinator == nil {
@@ -142,17 +116,5 @@ class CoreDataStackManager {
         }
         }
     }
-   /* func saveContext () {
-        
-        if let context = self.managedObjectContext {
-            
-            var error: NSError? = nil
-            
-            if context.hasChanges && !context.save() {
-                NSLog("Unresolved error \(error), \(error!.userInfo)")
-                abort()
-            }
-        }
-    }*/
 }
 

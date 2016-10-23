@@ -4,7 +4,6 @@
 //
 //  Created by Fernando Rodríguez Romero on 21/02/16.
 //  Copyright © 2016 udacity.com. All rights reserved.
-//
 
 import CoreData
 
@@ -35,18 +34,12 @@ struct CoreDataStack {
         }
         self.model = model
         
-        
-    
         // Create the store coordinator
         coordinator = NSPersistentStoreCoordinator(managedObjectModel: model)
-        
-        
         
         // create a context and add connect it to the coordinator
         context = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
         context.persistentStoreCoordinator = coordinator
-        
-        
         
         // Add a SQLite store located in the documents folder
         let fm = FileManager.default
@@ -58,7 +51,6 @@ struct CoreDataStack {
         
         self.dbURL = docUrl.appendingPathComponent("model.sqlite")
         
-        
         // Options for migration
         let options = [NSInferMappingModelAutomaticallyOption : true, NSMigratePersistentStoresAutomaticallyOption : true]
         
@@ -68,7 +60,6 @@ struct CoreDataStack {
         }catch{
             print("unable to add store at \(dbURL)")
         }
-        
     }
     
     // MARK:  - Utils
@@ -81,7 +72,6 @@ struct CoreDataStack {
         
     }
 }
-
 
 // MARK:  - Removing data
 extension CoreDataStack  {
@@ -114,29 +104,12 @@ extension CoreDataStack {
                 print("Error while autosaving")
             }
             
-            
             let delayInNanoSeconds = UInt64(delayInSeconds) * NSEC_PER_SEC
             let time = DispatchTime.now() + Double(Int64(delayInNanoSeconds)) / Double(NSEC_PER_SEC)
             
             DispatchQueue.main.asyncAfter(deadline: time, execute: {
                 self.autoSave(delayInSeconds)
             })
-            
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

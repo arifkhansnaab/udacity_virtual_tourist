@@ -22,8 +22,6 @@ class MapViewController: UIViewController, MKMapViewDelegate {
         } else {
             lblDeletePin.isHidden = true
             (sender as! UIBarButtonItem).title = "Edit"
-            
-           
         }
     }
     
@@ -40,8 +38,7 @@ class MapViewController: UIViewController, MKMapViewDelegate {
                 for object in result {
                     context.delete(object)
                 }
-            }
-        
+        }
         mapView.removeAnnotation(viewAnnottion.annotation!)
         
         do {
@@ -90,7 +87,6 @@ class MapViewController: UIViewController, MKMapViewDelegate {
         let longitude = view.annotation?.coordinate.longitude
 
         if ( lblDeletePin.isHidden == false) {
-            
             //self.deletePin(viewAnnottion: view)
             let mapPins = NSFetchRequest<MapPin>(entityName: "MapPin")
             let searchQuery = NSPredicate(format: "latitude = %@ AND longitude = %@", argumentArray: [latitutde!, longitude!])
@@ -109,7 +105,6 @@ class MapViewController: UIViewController, MKMapViewDelegate {
             } catch let error as NSError {
                 print (error)
             }
-            
             return;
         }
         
@@ -123,7 +118,7 @@ class MapViewController: UIViewController, MKMapViewDelegate {
     }
     
     //Add pin on the map when user holds the long press
-    let mapPointAnnotation = MKPointAnnotation()
+    var mapPointAnnotation = MKPointAnnotation()
     
     func AddPin(_ uiGestureRecognizer: UIGestureRecognizer) {
         if ( uiGestureRecognizer.state == .began) {
@@ -131,7 +126,7 @@ class MapViewController: UIViewController, MKMapViewDelegate {
             let touchPoint = uiGestureRecognizer.location(in: self.mapView)
             let pinCoord: CLLocationCoordinate2D = mapView.convert(touchPoint, toCoordinateFrom: self.mapView)
             
-            let mapPointAnnotation = MKPointAnnotation()
+            mapPointAnnotation = MKPointAnnotation()
             mapPointAnnotation.coordinate = pinCoord
         }
         else if ( uiGestureRecognizer.state == .changed) {
@@ -160,8 +155,6 @@ class MapViewController: UIViewController, MKMapViewDelegate {
             let storedMapPins = NSFetchRequest<MapPin>(entityName: "MapPin")
             let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
             let mapPins = try context.fetch(storedMapPins) as [Virtual_Tourist_v2.MapPin]
-            
-            
             
             for mapPin in mapPins {
                 let coordinate = CLLocationCoordinate2DMake(CLLocationDegrees(mapPin.latitude), CLLocationDegrees(mapPin.longitude))
