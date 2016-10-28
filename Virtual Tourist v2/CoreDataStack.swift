@@ -49,7 +49,7 @@ struct CoreDataStack {
             return nil
         }
         
-        self.dbURL = docUrl.appendingPathComponent("model.sqlite")
+        self.dbURL = docUrl.appendingPathComponent("Virtual_Tourist_v2.sqlite")
         
         // Options for migration
         let options = [NSInferMappingModelAutomaticallyOption : true, NSMigratePersistentStoresAutomaticallyOption : true]

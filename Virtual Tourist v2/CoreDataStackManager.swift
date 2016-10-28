@@ -16,7 +16,7 @@ import CoreData
  *
  */
 
-private let SQLITE_FILE_NAME = "ColorCollection.sqlite"
+private let SQLITE_FILE_NAME = "Virtual_Tourist_v2.sqlite"
 
 class CoreDataStackManager {
     // MARK: - Shared Instance

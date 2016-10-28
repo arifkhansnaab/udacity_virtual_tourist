@@ -23,7 +23,6 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
     var URLs = [String]()
     var mapPin: MapPin!
     
-    var mapPinSave : MapPin!
     
     var selectedIndexes = [IndexPath]()
     
@@ -50,7 +49,6 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
                 self.navigationController?.isNavigationBarHidden = false
                 self.URLs = result!
                 self.setMapRegion()
-                self.addSelectedMapPin()
                 self.collectionView.reloadData()
             }
         }
@@ -59,78 +57,6 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
             try fetchResultsController.performFetch()
         } catch let error as NSError {
             print(error)
-        }
-    }
-    
-    func addSelectedMapPin() {
-        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-        
-        let mapPins = NSFetchRequest<MapPin>(entityName: "MapPin")
-        let searchQuery = NSPredicate(format: "latitude = %@ AND longitude = %@", argumentArray: [self.mapPin.latitude, self.mapPin.longitude])
-        mapPins.predicate = searchQuery
-        
-        if let result = try? context.fetch(mapPins) {
-            for object in result {
-                mapPinSave = object
-                
-                let count = mapPinSave.photos?.allObjects.count
-                
-                //In case photos already exist, return
-                if ( count != 0 ) {
-                    return
-                }
-            }
-        }
-        mapPinSave = MapPin(lat: self.mapPin.latitude, long: self.mapPin.longitude, context: context)
-        
-        do {
-            try context.save()
-        } catch let error as NSError {
-            print (error)
-        }
-
-    }
-    
-    func addSelectedPin() {
-        
-        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-        
-        let mapPins = NSFetchRequest<MapPin>(entityName: "MapPin")
-        let searchQuery = NSPredicate(format: "latitude = %@ AND longitude = %@", argumentArray: [self.mapPin.latitude, self.mapPin.longitude])
-        mapPins.predicate = searchQuery
-        
-        if let result = try? context.fetch(mapPins) {
-            for object in result {
-                mapPinSave = object
-          
-                let count = mapPinSave.photos?.allObjects.count
-                
-                //In case photos already exist, return
-                if ( count != 0 ) {
-                    return
-                }
-            }
-        }
-        
-        mapPinSave = MapPin(lat: self.mapPin.latitude, long: self.mapPin.longitude, context: context)
-        
-        for index in 1...self.URLs.count {
-            let url = URL(string: self.URLs[index-1])
-            let data = NSData(contentsOf: url!)
-            let image = UIImage(data: data! as Data)
-            
-            let imageData: NSData? = UIImageJPEGRepresentation(image!, 0.6) as NSData?;
-
-            let photo = Photos(image: imageData!,  context: context)
-            
-            //print ("add photo to the location")
-            mapPinSave.addToPhotos(photo)
-        }
-        
-        do {
-            try context.save()
-        } catch let error as NSError {
-            print (error)
         }
     }
     
@@ -151,13 +77,24 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! CustomCollectionViewCell
-        //let photo = (mapPinSave.photos?.allObjects as! [Photos])[(indexPath as NSIndexPath).item]
-        //cell.imageView.image = UIImage(data:photo.image as! Data,scale:1.0)
         
-        let cgEmptyCellSize = CGSize(width: 1, height: 1)
-        
-        cell.imageView.image = self.getImageWithColor(color: UIColor.darkGray, size: cgEmptyCellSize)
-        populateImageAsyn(cell: cell, indexPath: indexPath)
+        downloadImage(imagePath: self.URLs[(indexPath as NSIndexPath).item], completionHandler: { (imageData, errorString) -> Void in
+
+            //*********************************************
+            //This code keep executing, please help
+            //*********************************************
+            cell.imageView.image = UIImage(data:imageData!,scale:1.0)
+            let context = CoreDataStackManager.sharedInstance().managedObjectContext!
+            let photo = Photos(image: imageData! as NSData,  context: context)
+            
+            self.mapPin.addToPhotos(photo)
+            
+            do {
+                try context.save()
+            } catch let error as NSError {
+                print (error)
+            }
+        })
         return cell
     }
     
@@ -173,38 +110,84 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
         return image
     }
     
+    func downloadImage( imagePath:String, completionHandler: @escaping (_ imageData: Data?, _ errorString: String?) -> Void){
+        let session = URLSession.shared
+        let imgURL = NSURL(string: imagePath)
+        let request: NSURLRequest = NSURLRequest(url: imgURL! as URL)
+        
+        let task = session.dataTask(with: request as URLRequest) {data, response, downloadError in
+            
+            if downloadError != nil {
+                completionHandler(nil, "Could not download image \(imagePath)")
+            } else {
+                
+                completionHandler(data, nil)
+            }
+        }
+        
+        task.resume()
+    }
+    
+    var count = 0
+    
     func populateImageAsyn (cell: CustomCollectionViewCell, indexPath: IndexPath ) {
+        
+        print("map pin")
+        print((indexPath as NSIndexPath).item)
         
         DispatchQueue.global().async {
         
             DispatchQueue.main.async {
                 //check if image has already been loaded
-                if ( self.mapPinSave.photos?.count == self.URLs.count ) {
-                    print("load loading image from saved entity")
-                    let photo = (self.mapPinSave.photos?.allObjects as! [Photos])[(indexPath as NSIndexPath).item]
-                    cell.imageView.image = UIImage(data:photo.image as! Data,scale:1.0)
-                } else {
+                //if ( self.mapPinSave.photos?.count == self.URLs.count ) {
+                //    print("load loading image from saved entity")
+                //    let photo = (self.mapPinSave.photos?.allObjects as! [Photos])[(indexPath as NSIndexPath).item]
+                //    cell.imageView.image = UIImage(data:photo.image as! Data,scale:1.0)
+                //} else {
                 
                     let url = URL(string: self.URLs[(indexPath as NSIndexPath).item])
                     let data = NSData(contentsOf: url!)
                 
-                    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-
                     let image = UIImage(data: data! as Data)
                     let imageData: NSData? = UIImageJPEGRepresentation(image!, 0.6) as NSData?;
-                    let photo = Photos(image: imageData!,  context: context)
+                    let context = CoreDataStackManager.sharedInstance().managedObjectContext!
                 
+                    let mapPins = NSFetchRequest<MapPin>(entityName: "MapPin")
+                
+                    let mapPinFetch = NSFetchRequest<MapPin>(entityName: "MapPin")
+                
+                do {
+                    let fetchedPins = try context.fetch(mapPinFetch as! NSFetchRequest<NSFetchRequestResult>) as! [MapPin]
+                    print ("test")
+                } catch {
+                    print ("Failed to fetch")
+                }
+                
+                    let searchQuery = NSPredicate(format: "latitude = %@ AND longitude = %@", argumentArray: [self.mapPin.latitude, self.mapPin.longitude])
+                    mapPins.predicate = searchQuery
+                
+                    if let result = try? context.fetch(mapPins) {
+                        for object in result {
+                            let photo = Photos(image: imageData!,  context: context)
+                            (object as MapPin).addToPhotos(photo)
+                            cell.imageView.image = UIImage(data:photo.image as! Data,scale:1.0)
+                            
+                            self.count = self.count + 1
+                            print(self.count)
+                        }
+                    }
+                
+                    //let photo = Photos(image: imageData!,  context: context)
                     //print ("add photo to the location")
-                    self.mapPinSave.addToPhotos(photo)
-                
-                    cell.imageView.image = UIImage(data:photo.image as! Data,scale:1.0)
+                    //self.mapPinSave.addToPhotos(photo)
+                    //cell.imageView.image = UIImage(data:photo.image as! Data,scale:1.0)
                 
                     do {
                         try context.save()
                     } catch let error as NSError {
                         print (error)
                     }
-                }
+                //}
             }
         }
     }

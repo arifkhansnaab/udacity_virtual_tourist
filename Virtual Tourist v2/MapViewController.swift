@@ -51,8 +51,8 @@ class MapViewController: UIViewController, MKMapViewDelegate {
     @IBOutlet weak var btnEditPin: UIBarButtonItem!
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
         
+        // Do any additional setup after loading the view, typically from a nib.
         self.mapView.delegate = self
         
         //Add long press for users
@@ -67,6 +67,17 @@ class MapViewController: UIViewController, MKMapViewDelegate {
         setMapRegion()
         
         lblDeletePin.isHidden = true
+        
+        let context = CoreDataStackManager.sharedInstance().managedObjectContext!
+        
+        let mapPinFetch = NSFetchRequest<MapPin>(entityName: "MapPin")
+        
+        do {
+            let fetchedPins = try context.fetch(mapPinFetch as! NSFetchRequest<NSFetchRequestResult>) as! [MapPin]
+        } catch {
+            print ("Failed to fetch")
+        }
+        
     }
     
     func setMapRegion() {
@@ -82,12 +93,11 @@ class MapViewController: UIViewController, MKMapViewDelegate {
     
     func mapView(_ mapView: MKMapView, didSelect view:MKAnnotationView) {
     
-        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+        let context = CoreDataStackManager.sharedInstance().managedObjectContext!
         let latitutde = view.annotation?.coordinate.latitude
         let longitude = view.annotation?.coordinate.longitude
 
         if ( lblDeletePin.isHidden == false) {
-            //self.deletePin(viewAnnottion: view)
             let mapPins = NSFetchRequest<MapPin>(entityName: "MapPin")
             let searchQuery = NSPredicate(format: "latitude = %@ AND longitude = %@", argumentArray: [latitutde!, longitude!])
             mapPins.predicate = searchQuery
@@ -101,18 +111,25 @@ class MapViewController: UIViewController, MKMapViewDelegate {
             
             do {
                 try context.save()
-                print("context save")
             } catch let error as NSError {
                 print (error)
             }
             return;
         }
         
-        //If user is not in the deletion mode, then open the map and images
-        let mapPin = MapPin(lat: latitutde!, long: longitude!, context: context)
+        let mapPins = NSFetchRequest<MapPin>(entityName: "MapPin")
+        let searchQuery = NSPredicate(format: "latitude = %@ AND longitude = %@", argumentArray: [latitutde!, longitude!])
+        mapPins.predicate = searchQuery
+        var selectedMapPin : MapPin!
+        
+        if let result = try? context.fetch(mapPins) {
+            for object in result {
+                selectedMapPin = object as MapPin
+            }
+        }
         
         let oViewController = self.storyboard!.instantiateViewController(withIdentifier: "MapPhotoCollectionViewController") as! MapPhotoCollectionViewController
-        oViewController.mapPin = mapPin
+        oViewController.mapPin = selectedMapPin
         oViewController.mapView = mapView
         self.navigationController!.pushViewController(oViewController, animated: true)
     }
@@ -140,7 +157,7 @@ class MapViewController: UIViewController, MKMapViewDelegate {
         else if ( uiGestureRecognizer.state == .ended) {
             print("ended")
             do {
-                let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+                let context = CoreDataStackManager.sharedInstance().managedObjectContext!
                 _ = MapPin(lat: mapPointAnnotation.coordinate.latitude, long: mapPointAnnotation.coordinate.longitude, context: context)
                 try context.save()
             } catch {
@@ -153,7 +170,7 @@ class MapViewController: UIViewController, MKMapViewDelegate {
     func fetchPins() {
         do {
             let storedMapPins = NSFetchRequest<MapPin>(entityName: "MapPin")
-            let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+            let context = CoreDataStackManager.sharedInstance().managedObjectContext!
             let mapPins = try context.fetch(storedMapPins) as [Virtual_Tourist_v2.MapPin]
             
             for mapPin in mapPins {

@@ -3,14 +3,14 @@
     <entity name="MapPin" representedClassName=".MapPin" syncable="YES">
         <attribute name="latitude" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="longitude" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES" syncable="YES"/>
-        <relationship name="photos" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Photos" inverseName="mapPin" inverseEntity="Photos" syncable="YES"/>
+        <relationship name="photos" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Photos" inverseName="mapPin" inverseEntity="Photos" syncable="YES"/>
     </entity>
     <entity name="Photos" representedClassName=".Photos" syncable="YES">
         <attribute name="image" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES" syncable="YES"/>
         <relationship name="mapPin" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MapPin" inverseName="photos" inverseEntity="MapPin" syncable="YES"/>
     </entity>
     <elements>
-        <element name="MapPin" positionX="-45" positionY="0" width="128" height="88"/>
+        <element name="MapPin" positionX="-45" positionY="0" width="128" height="90"/>
         <element name="Photos" positionX="205" positionY="30" width="128" height="75"/>
     </elements>
 </model>
