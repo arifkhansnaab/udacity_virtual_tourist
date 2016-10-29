@@ -57,53 +57,13 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
                 self.URLs = result!
                 self.setMapRegion()
                 self.collectionView.reloadData()
-                //self.loadImages()
-
             }
         }
-        
-        
-        //do {
-        //    try fetchResultsController.performFetch()
-        //} catch let error as NSError {
-        //    print(error)
-        //}
     }
     
     func configureCell(_ cell: UICollectionViewCell, atIndexPath indexPath: IndexPath) {
         let photo = self.fetchResultsController.object(at: indexPath) as! Photos
     }
-
-    func loadImages () {
-        
-        var point = CGPoint(x: 0, y: 0)
-        var indexPath = collectionView.indexPathForItem(at: point)
-        let cell = collectionView.cellForItem(at: indexPath!)
-        cell?.backgroundColor = UIColor.blue
-        
-       /* downloadImage(imagePath: self.URLs[0], completionHandler: { (imageData, errorString) -> Void in
-         
-         self.count = self.count + 1
-         if ( self.count == self.URLs.count) {
-         print ("count equals exiting now")
-         return;
-         }
-         
-         cell.imageView.image = UIImage(data:imageData!,scale:1.0)
-         let context = CoreDataStackManager.sharedInstance().managedObjectContext!
-         let photo = Photos(image: imageData! as NSData,  context: context)
-         
-         self.mapPin.addToPhotos(photo)
-         
-         do {
-         try context.save()
-         } catch let error as NSError {
-         print (error)
-         }
-         }) */
-
-    }
-    
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return self.URLs.count
@@ -115,98 +75,24 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
-       /* let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! CustomCollectionViewCell
-        
-        print ("arif" + String(describing: indexPath))
-        print(indexPath)
-        
-        cell.imageView.image = #imageLiteral(resourceName: "loading")
-        return cell*/
-        
-        /*downloadImage(imagePath: self.URLs[(indexPath as NSIndexPath).item], completionHandler: { (imageData, errorString) -> Void in
-
-            self.count = self.count + 1
-            if ( self.count == self.URLs.count) {
-                print ("count equals exiting now")
-                return;
-            }
-            
-            cell.imageView.image = UIImage(data:imageData!,scale:1.0)
-            let context = CoreDataStackManager.sharedInstance().managedObjectContext!
-            let photo = Photos(image: imageData! as NSData,  context: context)
-            
-            self.mapPin.addToPhotos(photo)
-            
-            do {
-                try context.save()
-            } catch let error as NSError {
-                print (error)
-            }
-        }) */
-        
-        //let cell:CellClass = collectionView.dequeueReusableCellWithReuseIdentifier("cell", forIndexPath: indexPath) as! CellClass
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! CustomCollectionViewCell
-        
+        cell.imageView.layer.borderWidth = 1.0
+        cell.imageView.layer.borderColor = UIColor.black.cgColor
         
         if (images_cache[self.URLs[indexPath.row]] != nil)
-        //if (images_cache[images[indexPath.row]] != nil)
         {
             cell.imageView.image = images_cache[self.URLs[indexPath.row]]
-            //cell.Image.image = images_cache[images[indexPath.row]]
         }
         else
         {
             load_image(link: self.URLs[indexPath.row], imageview:cell.imageView)
-            //load_image(images[indexPath.row], imageview:cell.Image)
         }
-        
         return cell
-        
     }
     
     
     func load_image(link:String, imageview:UIImageView)
     {
-        
-       // let url:NSURL = NSURL(string: link)!
-       // let session = NSURLSession.sharedSession()
-        
-       // let request = NSMutableURLRequest(URL: url)
-       // request.timeoutInterval = 10
-        
-        
-       // let task = session.dataTaskWithRequest(request) {
-       //     (
-       //     data, response, error) in
-            
-       //     guard let _:NSData = data, let _:NSURLResponse = response  where error == nil else {
-                
-       //         return
-       //     }
-            
-            
-       //     var image = UIImage(data: data!)
-            
-       //     if (image != nil)
-       //     {
-                
-                
-        //        func set_image()
-        //        {
-        //            self.images_cache[link] = image
-        //            imageview.image = image
-        //        }
-                
-                
-        //        dispatch_async(dispatch_get_main_queue(), set_image)
-                
-        //    }
-            
-        //}
-        
-        //task.resume()
-        
-        //----
         
         let session = URLSession.shared
         let imgURL = NSURL(string: link)
@@ -215,11 +101,8 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
         let task = session.dataTask(with: request as URLRequest) {data, response, downloadError in
             
             if downloadError != nil {
-                //completionHandler(nil, "Could not download image \(imagePath)")
                 print ("Could not download image \(link)")
             } else {
-                
-                //completionHandler(data, nil)
                 
                 var image = UIImage(data: data!)
                 if (image != nil)
@@ -228,9 +111,21 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
                     {
                         self.images_cache[link] = image
                         imageview.image = image
+                        
+                        //Add photo entity
+                        let context = CoreDataStackManager.sharedInstance().managedObjectContext!
+                        let imageData: NSData? = UIImageJPEGRepresentation(image!, 0.6) as NSData?;
+                        
+                        let photo = Photos(image: imageData!,  context: context)
+                        self.mapPin.addToPhotos(photo)
+                        
+                        do {
+                            try context.save()
+                        } catch let error as NSError {
+                            print (error)
+                        }
+                        
                     }
-                    //DispatchQueue.main.asynchronously(execute: set_image)
-                    
                     DispatchQueue.main.async( execute: {
                         set_image()
                     })
@@ -240,103 +135,7 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
         task.resume()
     }
     
-    
-    func getImageWithColor(color: UIColor, size: CGSize) -> UIImage {
-        //let rect = CGRectMake(0, 0, size.width, size.height)
-        let rect = CGRect(x: 0, y: 0, width: size.width, height: size.height)
-        
-        UIGraphicsBeginImageContextWithOptions(size, false, 0)
-        color.setFill()
-        UIRectFill(rect)
-        let image: UIImage = UIGraphicsGetImageFromCurrentImageContext()!
-        UIGraphicsEndImageContext()
-        return image
-    }
-    
-    func downloadImage( imagePath:String, completionHandler: @escaping (_ imageData: Data?, _ errorString: String?) -> Void){
-        
-        print(imagePath)
-        let session = URLSession.shared
-        let imgURL = NSURL(string: imagePath)
-        let request: NSURLRequest = NSURLRequest(url: imgURL! as URL)
-        
-        let task = session.dataTask(with: request as URLRequest) {data, response, downloadError in
-            
-            if downloadError != nil {
-                completionHandler(nil, "Could not download image \(imagePath)")
-            } else {
-                
-                completionHandler(data, nil)
-            }
-        }
-        
-        task.resume()
-    }
-    
-  
-    
-    func populateImageAsyn (cell: CustomCollectionViewCell, indexPath: IndexPath ) {
-        
-        print("map pin")
-        print((indexPath as NSIndexPath).item)
-        
-        DispatchQueue.global().async {
-        
-            DispatchQueue.main.async {
-                //check if image has already been loaded
-                //if ( self.mapPinSave.photos?.count == self.URLs.count ) {
-                //    print("load loading image from saved entity")
-                //    let photo = (self.mapPinSave.photos?.allObjects as! [Photos])[(indexPath as NSIndexPath).item]
-                //    cell.imageView.image = UIImage(data:photo.image as! Data,scale:1.0)
-                //} else {
-                
-                    let url = URL(string: self.URLs[(indexPath as NSIndexPath).item])
-                    let data = NSData(contentsOf: url!)
-                
-                    let image = UIImage(data: data! as Data)
-                    let imageData: NSData? = UIImageJPEGRepresentation(image!, 0.6) as NSData?;
-                    let context = CoreDataStackManager.sharedInstance().managedObjectContext!
-                
-                    let mapPins = NSFetchRequest<MapPin>(entityName: "MapPin")
-                
-                    let mapPinFetch = NSFetchRequest<MapPin>(entityName: "MapPin")
-                
-                do {
-                    let fetchedPins = try context.fetch(mapPinFetch as! NSFetchRequest<NSFetchRequestResult>) as! [MapPin]
-                    print ("test")
-                } catch {
-                    print ("Failed to fetch")
-                }
-                
-                    let searchQuery = NSPredicate(format: "latitude = %@ AND longitude = %@", argumentArray: [self.mapPin.latitude, self.mapPin.longitude])
-                    mapPins.predicate = searchQuery
-                
-                    if let result = try? context.fetch(mapPins) {
-                        for object in result {
-                            let photo = Photos(image: imageData!,  context: context)
-                            (object as MapPin).addToPhotos(photo)
-                            cell.imageView.image = UIImage(data:photo.image as! Data,scale:1.0)
-                            
-                            self.count = self.count + 1
-                            print(self.count)
-                        }
-                    }
-                
-                    //let photo = Photos(image: imageData!,  context: context)
-                    //print ("add photo to the location")
-                    //self.mapPinSave.addToPhotos(photo)
-                    //cell.imageView.image = UIImage(data:photo.image as! Data,scale:1.0)
-                
-                    do {
-                        try context.save()
-                    } catch let error as NSError {
-                        print (error)
-                    }
-                //}
-            }
-        }
-    }
-    
+
     func setMapRegion() {
         let latitude:CLLocationDegrees = mapPin.latitude
         let longitude:CLLocationDegrees = mapPin.longitude 
