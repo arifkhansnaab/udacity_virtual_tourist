@@ -70,18 +70,23 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Remove Selected Images" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lDy-Gg-S0W">
-                                <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="21"/>
-                                <color key="textColor" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="cZM-D7-CsB">
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kWP-im-2IU">
+                                <frame key="frameInset" minX="19" minY="622" width="339" height="35"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="24"/>
+                                <state key="normal" title="Remove Selected Image">
+                                    <color key="titleColor" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="btnRemoveImage:" destination="ZE3-uW-xs1" eventType="touchUpInside" id="RDe-u8-8ew"/>
+                                </connections>
+                            </button>
+                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="cZM-D7-CsB">
                                 <frame key="frameInset" minX="3" minY="6" width="372" height="97"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="200" id="C6g-xD-Hnp"/>
                                 </constraints>
                             </mapView>
-                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="W3x-HB-fGw">
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="W3x-HB-fGw">
                                 <frame key="frameInset" minX="2" minY="116" width="371" height="496"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="t5y-BK-nJ3">
@@ -121,20 +126,20 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstItem="cZM-D7-CsB" firstAttribute="top" secondItem="ywq-ja-02K" secondAttribute="topMargin" id="2jO-NK-e4o"/>
-                            <constraint firstItem="lDy-Gg-S0W" firstAttribute="centerX" secondItem="ywq-ja-02K" secondAttribute="centerX" id="Cs9-Ik-eNG"/>
+                            <constraint firstItem="kWP-im-2IU" firstAttribute="centerX" secondItem="ywq-ja-02K" secondAttribute="centerX" id="8Ak-RC-Gh6"/>
                             <constraint firstItem="cZM-D7-CsB" firstAttribute="centerX" secondItem="ywq-ja-02K" secondAttribute="centerX" id="Dfa-2z-diZ"/>
-                            <constraint firstItem="tQC-Id-2mI" firstAttribute="top" secondItem="lDy-Gg-S0W" secondAttribute="bottom" constant="6" id="VgG-II-zY1"/>
+                            <constraint firstItem="tQC-Id-2mI" firstAttribute="top" secondItem="kWP-im-2IU" secondAttribute="bottom" constant="1" id="LP8-SN-XgT"/>
                             <constraint firstItem="W3x-HB-fGw" firstAttribute="leading" secondItem="ywq-ja-02K" secondAttribute="leadingMargin" constant="-14" id="Viw-HC-p1u"/>
-                            <constraint firstItem="lDy-Gg-S0W" firstAttribute="top" secondItem="W3x-HB-fGw" secondAttribute="bottom" constant="2" id="bkB-XJ-rhE"/>
                             <constraint firstAttribute="trailing" secondItem="cZM-D7-CsB" secondAttribute="trailing" id="exO-jp-e7T"/>
                             <constraint firstItem="W3x-HB-fGw" firstAttribute="top" secondItem="cZM-D7-CsB" secondAttribute="bottom" constant="23" id="j86-A2-7JU"/>
+                            <constraint firstItem="kWP-im-2IU" firstAttribute="top" secondItem="W3x-HB-fGw" secondAttribute="bottom" constant="10" id="kM1-8a-cMY"/>
                             <constraint firstItem="W3x-HB-fGw" firstAttribute="centerX" secondItem="ywq-ja-02K" secondAttribute="centerX" id="zKT-Mu-F77"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="collectionView" destination="W3x-HB-fGw" id="TvJ-Gc-Edz"/>
-                        <outlet property="lblRemoveImage" destination="lDy-Gg-S0W" id="Zyy-iU-l8e"/>
                         <outlet property="mapView" destination="cZM-D7-CsB" id="7WR-YO-Afy"/>
+                        <outlet property="removeButton" destination="kWP-im-2IU" id="2gN-Lp-IGt"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="YUc-tO-cDt" userLabel="First Responder" sceneMemberID="firstResponder"/>

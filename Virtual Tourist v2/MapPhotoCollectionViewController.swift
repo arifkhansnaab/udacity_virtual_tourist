@@ -14,8 +14,7 @@ import Photos
 
 
 class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UICollectionViewDelegate, UICollectionViewDataSource, NSFetchedResultsControllerDelegate {
-    
-    
+    @IBOutlet weak var removeButton: UIButton!
     @IBOutlet weak var lblRemoveImage: UILabel!
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var collectionView: UICollectionView!
@@ -24,9 +23,7 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
     var mapPin: MapPin!
     
     var images_cache = [String:UIImage]()
-    
-    //var count = 0
-    
+    var deletedURL = [String]()
     var selectedIndexes = [IndexPath]()
     
     // Keep the changes. We will keep track of insertions, deletions, and updates.
@@ -40,7 +37,8 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
         super.viewDidLoad()
         
         self.mapView.delegate = self
-        lblRemoveImage.isHidden = true
+        
+        removeButton.isHidden = true
         
         let layout:UICollectionViewFlowLayout = UICollectionViewFlowLayout()
         layout.itemSize = CGSize(width: 120, height: 120) //CGSizeMake(120,120)
@@ -61,6 +59,37 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
         }
     }
     
+    @IBAction func btnRemoveImage(_ sender: AnyObject) {
+        
+        let context = CoreDataStackManager.sharedInstance().managedObjectContext!
+        
+        for i in 0 ..< deletedURL.count {
+            
+            let url = deletedURL[i]
+            
+            self.URLs.remove(at: self.URLs.index(of: url)!)
+            
+            let photos = NSFetchRequest<Photos>(entityName: "Photos")
+            let searchQuery = NSPredicate(format: "url = %@", argumentArray: [url])
+            photos.predicate = searchQuery
+            
+            if let result = try? context.fetch(photos) {
+                for object in result {
+                    context.delete(object)
+                }
+            }
+        }
+        
+        do {
+            try context.save()
+        } catch let error as NSError {
+            print (error)
+        }
+        
+        self.collectionView.reloadData()
+        removeButton.isHidden = true
+    }
+    
     func configureCell(_ cell: UICollectionViewCell, atIndexPath indexPath: IndexPath) {
         let photo = self.fetchResultsController.object(at: indexPath) as! Photos
     }
@@ -71,20 +100,18 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         
-        lblRemoveImage.isHidden = false
-        let cell = collectionView.cellForItem(at: indexPath as IndexPath)
-     
-        cell?.layer.borderWidth = 2.0
-        cell?.layer.borderColor = UIColor.yellow.cgColor
-    }
-    
-   
-    
-    private func collectionView(collectionView: UICollectionView!, didSelectItemAtIndexPath indexPath: NSIndexPath!) {
-        lblRemoveImage.isHidden = false
-        let cell = collectionView.cellForItem(at: indexPath as IndexPath)
-        cell?.layer.borderWidth = 2.0
-        cell?.layer.borderColor = UIColor.gray.cgColor
+        removeButton.isHidden = false
+        let cell = collectionView.cellForItem(at: indexPath as IndexPath)! as! CustomCollectionViewCell
+        
+        if ( cell.layer.borderColor == UIColor.yellow.cgColor ) {
+            deletedURL.remove(at: deletedURL.index(of: cell.url)!)
+            cell.layer.borderWidth = 2.0
+            cell.layer.borderColor = UIColor.black.cgColor
+        } else {
+            cell.layer.borderWidth = 3.0
+            cell.layer.borderColor = UIColor.yellow.cgColor
+            deletedURL.append(cell.url)
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -97,8 +124,9 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
         
         if ( storedImage != nil ) {
             cell.imageView.image = storedImage
+            cell.url = self.URLs[indexPath.row]
         } else {
-            load_image(link: self.URLs[indexPath.row], imageview:cell.imageView)
+            load_image(link: self.URLs[indexPath.row], cell: cell)
         }
         
         return cell
@@ -119,7 +147,50 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
         }
         return nil
     }
-    
+   
+    func load_image(link:String, cell:CustomCollectionViewCell) {
+        
+        let session = URLSession.shared
+        let imgURL = NSURL(string: link)
+        let request: NSURLRequest = NSURLRequest(url: imgURL! as URL)
+        
+        let task = session.dataTask(with: request as URLRequest) {data, response, downloadError in
+            
+            if downloadError != nil {
+                print ("Could not download image \(link)")
+            } else {
+                
+                var image = UIImage(data: data!)
+                if (image != nil)
+                {
+                    func set_image()
+                    {
+                        self.images_cache[link] = image
+                        cell.imageView.image = image
+                        cell.url = link
+                        
+                        //Add photo entity
+                        let context = CoreDataStackManager.sharedInstance().managedObjectContext!
+                        let imageData: NSData? = UIImageJPEGRepresentation(image!, 0.6) as NSData?;
+                        
+                        let photo = Photos(image: imageData!, url: link,  context: context)
+                        self.mapPin.addToPhotos(photo)
+                        
+                        do {
+                            try context.save()
+                        } catch let error as NSError {
+                            print (error)
+                        }
+                    }
+                    DispatchQueue.main.async( execute: {
+                        set_image()
+                    })
+                }
+            }
+        }
+        task.resume()
+    }
+
     func load_image(link:String, imageview:UIImageView) {
         
         let session = URLSession.shared
