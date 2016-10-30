@@ -25,7 +25,7 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
     
     var images_cache = [String:UIImage]()
     
-    var count = 0
+    //var count = 0
     
     var selectedIndexes = [IndexPath]()
     
@@ -70,7 +70,21 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        
         lblRemoveImage.isHidden = false
+        let cell = collectionView.cellForItem(at: indexPath as IndexPath)
+     
+        cell?.layer.borderWidth = 2.0
+        cell?.layer.borderColor = UIColor.yellow.cgColor
+    }
+    
+   
+    
+    private func collectionView(collectionView: UICollectionView!, didSelectItemAtIndexPath indexPath: NSIndexPath!) {
+        lblRemoveImage.isHidden = false
+        let cell = collectionView.cellForItem(at: indexPath as IndexPath)
+        cell?.layer.borderWidth = 2.0
+        cell?.layer.borderColor = UIColor.gray.cgColor
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -79,20 +93,34 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
         cell.imageView.layer.borderWidth = 1.0
         cell.imageView.layer.borderColor = UIColor.black.cgColor
         
-        if (images_cache[self.URLs[indexPath.row]] != nil)
-        {
-            cell.imageView.image = images_cache[self.URLs[indexPath.row]]
-        }
-        else
-        {
+        let storedImage = isImageAlreadyinEntity(url: self.URLs[indexPath.row])
+        
+        if ( storedImage != nil ) {
+            cell.imageView.image = storedImage
+        } else {
             load_image(link: self.URLs[indexPath.row], imageview:cell.imageView)
         }
+        
         return cell
     }
     
+    func isImageAlreadyinEntity (url: String) -> UIImage? {
+        
+        let context = CoreDataStackManager.sharedInstance().managedObjectContext!
+        let photos = NSFetchRequest<Photos>(entityName: "Photos")
+        let searchQuery = NSPredicate(format: "url = %@", argumentArray: [url])
+        photos.predicate = searchQuery
+        
+        if let result = try? context.fetch(photos) {
+            for object in result {
+                let image = UIImage(data: (object as Photos).image as! Data)
+                return image!
+            }
+        }
+        return nil
+    }
     
-    func load_image(link:String, imageview:UIImageView)
-    {
+    func load_image(link:String, imageview:UIImageView) {
         
         let session = URLSession.shared
         let imgURL = NSURL(string: link)
@@ -116,7 +144,7 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
                         let context = CoreDataStackManager.sharedInstance().managedObjectContext!
                         let imageData: NSData? = UIImageJPEGRepresentation(image!, 0.6) as NSData?;
                         
-                        let photo = Photos(image: imageData!,  context: context)
+                        let photo = Photos(image: imageData!, url: link,  context: context)
                         self.mapPin.addToPhotos(photo)
                         
                         do {

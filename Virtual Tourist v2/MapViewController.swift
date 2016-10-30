@@ -77,7 +77,6 @@ class MapViewController: UIViewController, MKMapViewDelegate {
         } catch {
             print ("Failed to fetch")
         }
-        
     }
     
     func setMapRegion() {
