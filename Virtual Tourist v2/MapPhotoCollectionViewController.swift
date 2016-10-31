@@ -14,6 +14,7 @@ import Photos
 
 
 class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UICollectionViewDelegate, UICollectionViewDataSource, NSFetchedResultsControllerDelegate {
+    
     @IBOutlet weak var removeButton: UIButton!
     @IBOutlet weak var lblRemoveImage: UILabel!
     @IBOutlet weak var mapView: MKMapView!
@@ -34,16 +35,70 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
     var sharedContext = CoreDataStackManager.sharedInstance().managedObjectContext!
     
     override func viewDidLoad() {
+        
         super.viewDidLoad()
+        mapView.delegate = self
         
-        self.mapView.delegate = self
-        
-        removeButton.isHidden = true
+        removeButton.setTitle("Add new collection", for: UIControlState.normal)
         
         let layout:UICollectionViewFlowLayout = UICollectionViewFlowLayout()
-        layout.itemSize = CGSize(width: 120, height: 120) //CGSizeMake(120,120)
-        self.collectionView.setCollectionViewLayout(layout, animated: true)
+        layout.itemSize = CGSize(width: touristConstants.cellWidth, height: touristConstants.cellHeight)
+        collectionView.setCollectionViewLayout(layout, animated: true)
         
+        downloadFlickrPhotosAndPopulateCollection()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(true)
+        self.collectionView!.reloadData()
+        mapView.reloadInputViews()
+        self.mapView.reloadInputViews()
+    }
+
+    
+    @IBAction func btnRemoveImage(_ sender: AnyObject) {
+ 
+        //In case of new collection, full reload, clear entities
+        if ( removeButton.currentTitle == "Add new collection") {
+            deletedURL.removeAll()
+            deleteAllPhotos()
+            downloadFlickrPhotosAndPopulateCollection()
+            return;
+        }
+        
+        //Remove selected images
+        for i in 0 ..< deletedURL.count {
+            let url = deletedURL[i]
+            URLs.remove(at: URLs.index(of: url)!)
+            deletePhotofromEntity(url: url)
+        }
+        
+        //Clear up deleted URL collection
+        deletedURL.removeAll()
+        removeButton.setTitle("Add new collection", for: UIControlState.normal)
+        collectionView.reloadData()
+    }
+    
+    func deletePhotofromEntity(url: String) {
+        let context = CoreDataStackManager.sharedInstance().managedObjectContext!
+        let photos = NSFetchRequest<Photos>(entityName: "Photos")
+        let searchQuery = NSPredicate(format: "url = %@", argumentArray: [url])
+        photos.predicate = searchQuery
+        
+        if let result = try? context.fetch(photos) {
+            for object in result {
+                context.delete(object)
+            }
+        }
+        
+        do {
+            try context.save()
+        } catch let error as NSError {
+            print (error)
+        }
+    }
+    
+    func downloadFlickrPhotosAndPopulateCollection() {
         FlickrApi.sharedInstance.getPhotos(Double(mapPin.latitude), longitude: Double(mapPin.longitude)) { (result, error) in
             if let error = error {
                 print(error)
@@ -54,30 +109,17 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
                 self.navigationController?.isNavigationBarHidden = false
                 self.URLs = result!
                 self.setMapRegion()
+                self.dropPin()
                 self.collectionView.reloadData()
+                        self.mapView.reloadInputViews()
             }
         }
     }
     
-    @IBAction func btnRemoveImage(_ sender: AnyObject) {
-        
+    func deleteAllPhotos() {
         let context = CoreDataStackManager.sharedInstance().managedObjectContext!
-        
-        for i in 0 ..< deletedURL.count {
-            
-            let url = deletedURL[i]
-            
-            self.URLs.remove(at: self.URLs.index(of: url)!)
-            
-            let photos = NSFetchRequest<Photos>(entityName: "Photos")
-            let searchQuery = NSPredicate(format: "url = %@", argumentArray: [url])
-            photos.predicate = searchQuery
-            
-            if let result = try? context.fetch(photos) {
-                for object in result {
-                    context.delete(object)
-                }
-            }
+        for item in self.mapPin.photos! {
+            context.delete((item as! Photos))
         }
         
         do {
@@ -85,13 +127,10 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
         } catch let error as NSError {
             print (error)
         }
-        
-        self.collectionView.reloadData()
-        removeButton.isHidden = true
     }
     
     func configureCell(_ cell: UICollectionViewCell, atIndexPath indexPath: IndexPath) {
-        let photo = self.fetchResultsController.object(at: indexPath) as! Photos
+        _ = fetchResultsController.object(at: indexPath) as! Photos
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -99,41 +138,44 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        
-        removeButton.isHidden = false
         let cell = collectionView.cellForItem(at: indexPath as IndexPath)! as! CustomCollectionViewCell
         
         if ( cell.layer.borderColor == UIColor.yellow.cgColor ) {
             deletedURL.remove(at: deletedURL.index(of: cell.url)!)
-            cell.layer.borderWidth = 2.0
+            cell.layer.borderWidth = CGFloat(touristConstants.cellBorderWidth)
             cell.layer.borderColor = UIColor.black.cgColor
         } else {
-            cell.layer.borderWidth = 3.0
+            cell.layer.borderWidth = CGFloat(touristConstants.cellBorderWidth)
             cell.layer.borderColor = UIColor.yellow.cgColor
             deletedURL.append(cell.url)
+        }
+        
+        if ( deletedURL.count == 0 ) {
+            removeButton.setTitle("Add new collection", for: UIControlState.normal)
+        } else {
+            removeButton.setTitle("Remove Selected Pictures", for: UIControlState.normal)
         }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! CustomCollectionViewCell
-        cell.imageView.layer.borderWidth = 1.0
-        cell.imageView.layer.borderColor = UIColor.black.cgColor
+        cell.layer.borderWidth = CGFloat(touristConstants.cellBorderWidth)
+        cell.layer.borderColor = UIColor.black.cgColor
         
-        let storedImage = isImageAlreadyinEntity(url: self.URLs[indexPath.row])
+        let storedImage = isImageAlreadyinEntity(url: URLs[indexPath.row])
         
         if ( storedImage != nil ) {
             cell.imageView.image = storedImage
-            cell.url = self.URLs[indexPath.row]
+            cell.url = URLs[indexPath.row]
         } else {
-            load_image(link: self.URLs[indexPath.row], cell: cell)
+            load_image(link: URLs[indexPath.row], cell: cell)
         }
         
         return cell
     }
     
     func isImageAlreadyinEntity (url: String) -> UIImage? {
-        
         let context = CoreDataStackManager.sharedInstance().managedObjectContext!
         let photos = NSFetchRequest<Photos>(entityName: "Photos")
         let searchQuery = NSPredicate(format: "url = %@", argumentArray: [url])
@@ -181,6 +223,8 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
                         } catch let error as NSError {
                             print (error)
                         }
+                        
+                        
                     }
                     DispatchQueue.main.async( execute: {
                         set_image()
@@ -191,49 +235,6 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
         task.resume()
     }
 
-    func load_image(link:String, imageview:UIImageView) {
-        
-        let session = URLSession.shared
-        let imgURL = NSURL(string: link)
-        let request: NSURLRequest = NSURLRequest(url: imgURL! as URL)
-        
-        let task = session.dataTask(with: request as URLRequest) {data, response, downloadError in
-            
-            if downloadError != nil {
-                print ("Could not download image \(link)")
-            } else {
-                
-                var image = UIImage(data: data!)
-                if (image != nil)
-                {
-                    func set_image()
-                    {
-                        self.images_cache[link] = image
-                        imageview.image = image
-                        
-                        //Add photo entity
-                        let context = CoreDataStackManager.sharedInstance().managedObjectContext!
-                        let imageData: NSData? = UIImageJPEGRepresentation(image!, 0.6) as NSData?;
-                        
-                        let photo = Photos(image: imageData!, url: link,  context: context)
-                        self.mapPin.addToPhotos(photo)
-                        
-                        do {
-                            try context.save()
-                        } catch let error as NSError {
-                            print (error)
-                        }
-                        
-                    }
-                    DispatchQueue.main.async( execute: {
-                        set_image()
-                    })
-                }
-            }
-        }
-        task.resume()
-    }
-    
 
     func setMapRegion() {
         let latitude:CLLocationDegrees = mapPin.latitude
@@ -244,6 +245,14 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
         let location = CLLocationCoordinate2DMake(latitude, longitude)
         let region = MKCoordinateRegionMake(location, span)
         mapView.setRegion(region, animated: false)
+        
+    }
+    
+    func dropPin() {
+        let pinCoord = CLLocationCoordinate2D(latitude: mapPin.latitude, longitude: mapPin.longitude)
+        let mapPointAnnotation = MKPointAnnotation()
+        mapPointAnnotation.coordinate = pinCoord
+        mapView.addAnnotation(mapPointAnnotation)
     }
     
     lazy var fetchResultsController: NSFetchedResultsController<MapPin> = {

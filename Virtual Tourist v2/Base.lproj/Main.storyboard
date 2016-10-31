@@ -51,7 +51,7 @@
                     <connections>
                         <outlet property="lblDeletePin" destination="PI5-uy-clo" id="NMQ-QF-WOB"/>
                         <outlet property="mapView" destination="SVM-YX-9Tf" id="Yhm-Ja-iHd"/>
-                        <segue destination="ZE3-uW-xs1" kind="show" identifier="Map Photo View" id="GUe-LF-yEy"/>
+                        <segue destination="ZE3-uW-xs1" kind="push" identifier="Map Photo View" id="GUe-LF-yEy"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
@@ -80,13 +80,13 @@
                                     <action selector="btnRemoveImage:" destination="ZE3-uW-xs1" eventType="touchUpInside" id="RDe-u8-8ew"/>
                                 </connections>
                             </button>
-                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="cZM-D7-CsB">
+                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="cZM-D7-CsB">
                                 <frame key="frameInset" minX="3" minY="6" width="372" height="97"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="200" id="C6g-xD-Hnp"/>
                                 </constraints>
                             </mapView>
-                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="W3x-HB-fGw">
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="W3x-HB-fGw">
                                 <frame key="frameInset" minX="2" minY="116" width="371" height="496"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="t5y-BK-nJ3">
@@ -136,6 +136,7 @@
                             <constraint firstItem="W3x-HB-fGw" firstAttribute="centerX" secondItem="ywq-ja-02K" secondAttribute="centerX" id="zKT-Mu-F77"/>
                         </constraints>
                     </view>
+                    <navigationItem key="navigationItem" id="Dq9-Wj-AJo"/>
                     <connections>
                         <outlet property="collectionView" destination="W3x-HB-fGw" id="TvJ-Gc-Edz"/>
                         <outlet property="mapView" destination="cZM-D7-CsB" id="7WR-YO-Afy"/>

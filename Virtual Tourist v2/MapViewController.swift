@@ -5,7 +5,6 @@
 //  Created by Arif Khan on 10/5/16.
 //  Copyright © 2016 Snnab. All rights reserved.
 //
-
 import UIKit
 import MapKit
 import CoreData
@@ -14,6 +13,11 @@ class MapViewController: UIViewController, MKMapViewDelegate {
 
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var lblDeletePin: UILabel!
+    @IBOutlet weak var btnEditPin: UIBarButtonItem!
+    
+    //Add pin on the map when user holds the long press
+    var mapPointAnnotation = MKPointAnnotation()
+    
     @IBAction func btnEditPin(_ sender: AnyObject) {
         
         if ( ((sender as! UIBarButtonItem).title) == "Edit" ) {
@@ -35,9 +39,9 @@ class MapViewController: UIViewController, MKMapViewDelegate {
         mapPins.predicate = searchQuery
             
         if let result = try? context.fetch(mapPins) {
-                for object in result {
-                    context.delete(object)
-                }
+            for object in result {
+                context.delete(object)
+            }
         }
         mapView.removeAnnotation(viewAnnottion.annotation!)
         
@@ -48,15 +52,14 @@ class MapViewController: UIViewController, MKMapViewDelegate {
         }
     }
     
-    @IBOutlet weak var btnEditPin: UIBarButtonItem!
     override func viewDidLoad() {
         super.viewDidLoad()
         
         // Do any additional setup after loading the view, typically from a nib.
-        self.mapView.delegate = self
+        mapView.delegate = self
         
         //Add long press for users
-        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(self.AddPin(_:)))
+        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(AddPin(_:)))
         longPress.minimumPressDuration = 1.0
         mapView.addGestureRecognizer(longPress)
         
@@ -67,23 +70,15 @@ class MapViewController: UIViewController, MKMapViewDelegate {
         setMapRegion()
         
         lblDeletePin.isHidden = true
-        
-        let context = CoreDataStackManager.sharedInstance().managedObjectContext!
-        
-        let mapPinFetch = NSFetchRequest<MapPin>(entityName: "MapPin")
-        
-        do {
-            let fetchedPins = try context.fetch(mapPinFetch as! NSFetchRequest<NSFetchRequestResult>) as! [MapPin]
-        } catch {
-            print ("Failed to fetch")
-        }
     }
     
+      
+    
     func setMapRegion() {
-        let latitude:CLLocationDegrees = constLatitude
-        let longitude:CLLocationDegrees = contLongitude
-        let latDelta:CLLocationDegrees = constLatDelta
-        let lonDelta:CLLocationDegrees = constLonDelta
+        let latitude:CLLocationDegrees = touristConstants.constLatitude
+        let longitude:CLLocationDegrees = touristConstants.contLongitude
+        let latDelta:CLLocationDegrees = touristConstants.constLatDelta
+        let lonDelta:CLLocationDegrees = touristConstants.constLonDelta
         let span = MKCoordinateSpanMake(latDelta, lonDelta)
         let location = CLLocationCoordinate2DMake(latitude, longitude)
         let region = MKCoordinateRegionMake(location, span)
@@ -92,63 +87,66 @@ class MapViewController: UIViewController, MKMapViewDelegate {
     
     func mapView(_ mapView: MKMapView, didSelect view:MKAnnotationView) {
     
-        let context = CoreDataStackManager.sharedInstance().managedObjectContext!
-        let latitutde = view.annotation?.coordinate.latitude
-        let longitude = view.annotation?.coordinate.longitude
-
         if ( lblDeletePin.isHidden == false) {
-            let mapPins = NSFetchRequest<MapPin>(entityName: "MapPin")
-            let searchQuery = NSPredicate(format: "latitude = %@ AND longitude = %@", argumentArray: [latitutde!, longitude!])
-            mapPins.predicate = searchQuery
-         
-            if let result = try? context.fetch(mapPins) {
-                for object in result {
-                    context.delete(object)
-                }
-            }
+            deleteMapPin(latitutde: (view.annotation?.coordinate.latitude)!, longitude: (view.annotation?.coordinate.longitude)!)
             mapView.removeAnnotation(view.annotation!)
-            
-            do {
-                try context.save()
-            } catch let error as NSError {
-                print (error)
-            }
             return;
         }
         
+        //in case of no deletion, select pin and navigate to show pictures
+        let oViewController = storyboard!.instantiateViewController(withIdentifier: "MapPhotoCollectionViewController") as! MapPhotoCollectionViewController
+        oViewController.mapPin = getMapPinByLatitudeLongitude(latitutde: (view.annotation?.coordinate.latitude)!, longitude: (view.annotation?.coordinate.longitude)!)
+        oViewController.mapView = mapView
+        navigationController!.pushViewController(oViewController, animated: true)
+        
+    }
+    
+    func getMapPinByLatitudeLongitude(latitutde: Double, longitude: Double) -> MapPin? {
+        let context = CoreDataStackManager.sharedInstance().managedObjectContext!
         let mapPins = NSFetchRequest<MapPin>(entityName: "MapPin")
-        let searchQuery = NSPredicate(format: "latitude = %@ AND longitude = %@", argumentArray: [latitutde!, longitude!])
+        let searchQuery = NSPredicate(format: "latitude = %@ AND longitude = %@", argumentArray: [latitutde, longitude])
         mapPins.predicate = searchQuery
-        var selectedMapPin : MapPin!
         
         if let result = try? context.fetch(mapPins) {
             for object in result {
-                selectedMapPin = object as MapPin
+                return (object as MapPin)
+            }
+        }
+        return nil
+    }
+    
+    func deleteMapPin(latitutde: Double, longitude: Double) {
+        let context = CoreDataStackManager.sharedInstance().managedObjectContext!
+        let mapPins = NSFetchRequest<MapPin>(entityName: "MapPin")
+        let searchQuery = NSPredicate(format: "latitude = %@ AND longitude = %@", argumentArray: [latitutde, longitude])
+        mapPins.predicate = searchQuery
+        
+        if let result = try? context.fetch(mapPins) {
+            for object in result {
+                context.delete(object)
             }
         }
         
-        let oViewController = self.storyboard!.instantiateViewController(withIdentifier: "MapPhotoCollectionViewController") as! MapPhotoCollectionViewController
-        oViewController.mapPin = selectedMapPin
-        oViewController.mapView = mapView
-        self.navigationController!.pushViewController(oViewController, animated: true)
+        do {
+            try context.save()
+        } catch let error as NSError {
+            print (error)
+        }
     }
-    
-    //Add pin on the map when user holds the long press
-    var mapPointAnnotation = MKPointAnnotation()
     
     func AddPin(_ uiGestureRecognizer: UIGestureRecognizer) {
         if ( uiGestureRecognizer.state == .began) {
             print("began")
-            let touchPoint = uiGestureRecognizer.location(in: self.mapView)
-            let pinCoord: CLLocationCoordinate2D = mapView.convert(touchPoint, toCoordinateFrom: self.mapView)
+            let touchPoint = uiGestureRecognizer.location(in: mapView)
+            let pinCoord: CLLocationCoordinate2D = mapView.convert(touchPoint, toCoordinateFrom: mapView)
             
             mapPointAnnotation = MKPointAnnotation()
             mapPointAnnotation.coordinate = pinCoord
         }
         else if ( uiGestureRecognizer.state == .changed) {
             print("changed")
-            let touchPoint = uiGestureRecognizer.location(in: self.mapView)
-            let pinCoord: CLLocationCoordinate2D = mapView.convert(touchPoint, toCoordinateFrom: self.mapView)
+            let touchPoint = uiGestureRecognizer.location(in: mapView)
+            let pinCoord: CLLocationCoordinate2D = mapView.convert(touchPoint, toCoordinateFrom: mapView)
             
             mapPointAnnotation.coordinate = pinCoord
             mapView.addAnnotation(mapPointAnnotation)

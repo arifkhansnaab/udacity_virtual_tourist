@@ -8,7 +8,12 @@
 
 import Foundation
 
-let constLatitude = 38.809055716114337
-let contLongitude = -86.58018857095449
-let constLatDelta = 2.99
-let constLonDelta = 2.99
+struct touristConstants {
+    static let constLatitude = 38.809055716114337
+    static let contLongitude = -86.58018857095449
+    static let constLatDelta = 2.99
+    static let constLonDelta = 2.99
+    static let cellBorderWidth = 2.0
+    static let cellHeight = 120
+    static let cellWidth = 120
+}

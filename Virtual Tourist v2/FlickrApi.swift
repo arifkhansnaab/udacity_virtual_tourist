@@ -7,7 +7,7 @@
 import Foundation
 
 
-class FlickrApi: NSObject {
+class FlickrApi : NSObject {
     
     func getPhotos(_ latitude: Double, longitude: Double, completionHandlerForPhotos: @escaping (_ result: [String]?, _ error: String?) -> Void) {
         
