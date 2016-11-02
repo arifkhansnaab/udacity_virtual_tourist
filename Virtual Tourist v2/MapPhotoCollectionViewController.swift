@@ -45,7 +45,18 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
         layout.itemSize = CGSize(width: touristConstants.cellWidth, height: touristConstants.cellHeight)
         collectionView.setCollectionViewLayout(layout, animated: true)
         
-        downloadFlickrPhotosAndPopulateCollection()
+        self.mapView.delegate = self
+        self.collectionView.delegate = self
+        self.collectionView.dataSource = self
+        self.navigationController?.isNavigationBarHidden = false
+        self.setMapRegion()
+        self.dropPin()
+        
+        if ( (mapPin.photos?.count)! > 0 ) {
+            populateCollectionFromEntity()
+        } else {
+            downloadFlickrPhotosAndPopulateCollection()
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -98,20 +109,34 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
         }
     }
     
+    func populateCollectionFromEntity() {
+        
+        for item in self.mapPin.photos! {
+            self.URLs.append((item as! Photos).url!)
+        }
+        
+        self.mapView.delegate = self
+        self.collectionView.delegate = self
+        self.collectionView.dataSource = self
+        self.navigationController?.isNavigationBarHidden = false
+        self.setMapRegion()
+        self.dropPin()
+        self.collectionView.reloadData()
+        self.mapView.reloadInputViews()
+        
+
+    }
+    
     func downloadFlickrPhotosAndPopulateCollection() {
         FlickrApi.sharedInstance.getPhotos(Double(mapPin.latitude), longitude: Double(mapPin.longitude)) { (result, error) in
             if let error = error {
                 print(error)
             } else {
-                self.mapView.delegate = self
-                self.collectionView.delegate = self
-                self.collectionView.dataSource = self
-                self.navigationController?.isNavigationBarHidden = false
-                self.URLs = result!
-                self.setMapRegion()
-                self.dropPin()
-                self.collectionView.reloadData()
-                        self.mapView.reloadInputViews()
+                DispatchQueue.main.async( execute: {
+                    self.URLs = result!
+                    self.collectionView.reloadData()
+                    self.mapView.reloadInputViews()
+                })
             }
         }
     }
@@ -217,6 +242,8 @@ class MapPhotoCollectionViewController: UIViewController, MKMapViewDelegate, UIC
                         
                         let photo = Photos(image: imageData!, url: link,  context: context)
                         self.mapPin.addToPhotos(photo)
+                        
+                        photo.mapPin = self.mapPin
                         
                         do {
                             try context.save()

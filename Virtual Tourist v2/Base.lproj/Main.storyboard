@@ -80,13 +80,13 @@
                                     <action selector="btnRemoveImage:" destination="ZE3-uW-xs1" eventType="touchUpInside" id="RDe-u8-8ew"/>
                                 </connections>
                             </button>
-                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="cZM-D7-CsB">
+                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="cZM-D7-CsB">
                                 <frame key="frameInset" minX="3" minY="6" width="372" height="97"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="200" id="C6g-xD-Hnp"/>
                                 </constraints>
                             </mapView>
-                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="W3x-HB-fGw">
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="W3x-HB-fGw">
                                 <frame key="frameInset" minX="2" minY="116" width="371" height="496"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="t5y-BK-nJ3">
@@ -103,7 +103,7 @@
                                             <rect key="frame" x="0.0" y="0.0" width="168" height="173"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="jf3-JD-As0">
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="loading" translatesAutoresizingMaskIntoConstraints="NO" id="jf3-JD-As0">
                                                     <accessibility key="accessibilityConfiguration">
                                                         <accessibilityTraits key="traits" image="YES" updatesFrequently="YES"/>
                                                     </accessibility>
@@ -166,4 +166,7 @@
             <point key="canvasLocation" x="-991" y="-28"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="loading" width="204" height="204"/>
+    </resources>
 </document>
